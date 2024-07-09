@@ -1,15 +1,8 @@
 import json
 import ossapi
 
-if __name__ == '__main__':
-    with open('creds.json') as creds_file:
-        creds = json.load(creds_file)
 
-    client_id = creds['CLIENT_ID']
-    client_secret = creds['CLIENT_SECRET']
-
-    api_client = ossapi.Ossapi(client_id, client_secret)
-
+def get_players():
     ph_players = []
 
     ranking_iterator = None
@@ -37,6 +30,20 @@ if __name__ == '__main__':
             current_score_rank += 1
 
         current_page_num += 1
+
+    return ph_players
+
+
+if __name__ == '__main__':
+    with open('creds.json') as creds_file:
+        creds = json.load(creds_file)
+
+    client_id = creds['CLIENT_ID']
+    client_secret = creds['CLIENT_SECRET']
+
+    api_client = ossapi.Ossapi(client_id, client_secret)
+
+    ph_players = get_players()
 
     print("PH Ranked Score Rankings")
 
