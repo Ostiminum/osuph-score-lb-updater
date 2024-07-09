@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     gsheets_client = gspread.service_account("gsheets_creds.json")   
 
-    # ph_players = get_players(osu_api_client)
+    ph_players = get_players(osu_api_client)
 
     # print("PH Ranked Score Rankings")
 
@@ -61,6 +61,4 @@ if __name__ == '__main__':
     #     )
 
     RANKING_SPREADSHEET = gsheets_client.open(creds['RANKING_SHEET'])
-
-    print(RANKING_SPREADSHEET.sheet1.get('A1'))
 
