@@ -1,39 +1,60 @@
 import json
+import requests
 import ossapi
 import gspread
 
 RANKING_SPREADSHEET: gspread.Spreadsheet 
 
+SCORE_RANK_API_URL = "https://score.respektive.pw/"
+
+class PH_Player():
+
+    username: str
+    user_id: int
+    user_avatar_url: str
+    curr_ranked_score: int
+    prev_ranked_score: int
+    country_score_rank = -1
+    global_score_rank = -1
+
+    def __init__(self, user_stats: ossapi.models.UserStatistics):
+        curr_user = user_stats.user
+
+        self.username = curr_user.username
+        self.user_id = curr_user.id
+        self.user_avatar_url = curr_user.avatar_url
+        self.curr_ranked_score = user_stats.ranked_score
+
+    def __repr__(self):
+        return f"PH_Player({self.username}, {self.user_id}, {self.user_avatar_url}, #{self.global_score_rank} (#{self.country_score_rank}))"
+
 def get_players(osu_api_client: ossapi.Ossapi):
-    ph_players = []
+    ph_players_list = []
 
     ranking_iterator = None
     current_page_num = 1
-    current_score_rank = 1
 
     while True:
-        score_ranking = osu_api_client.ranking(
+        ph_ranking = osu_api_client.ranking(
             "osu",
-            ossapi.RankingType.SCORE,
+            ossapi.RankingType.PERFORMANCE,
+            country="PH",
             cursor=ranking_iterator
         )
 
-        ranking_iterator = score_ranking.cursor
+        ranking_iterator = ph_ranking.cursor
 
         if ranking_iterator is None:
             break
 
         print(f"Visiting Page {current_page_num}...")
 
-        for player in score_ranking.ranking:
-            if player.user.country.code == "PH":
-                ph_players.append((player, current_score_rank))
-
-            current_score_rank += 1
+        for player in ph_ranking.ranking:
+            ph_players_list.append(PH_Player(player))
 
         current_page_num += 1
 
-    return ph_players
+    return ph_players_list
 
 
 if __name__ == '__main__':
@@ -47,18 +68,18 @@ if __name__ == '__main__':
 
     gsheets_client = gspread.service_account("gsheets_creds.json")   
 
-    ph_players = get_players(osu_api_client)
-
-    # print("PH Ranked Score Rankings")
-
-    # for index in range(len(ph_players)):
-    #     player, global_score_rank = ph_players[index]
-    #     print(
-    #         f"{index+1}.".ljust(4),
-    #         f"({global_score_rank})".ljust(7),
-    #         player.user.username.ljust(25),
-    #         f"{player.ranked_score}".rjust(15)
-    #     )
-
     RANKING_SPREADSHEET = gsheets_client.open(creds['RANKING_SHEET'])
 
+    # TODO:
+    # [ ] 1.) store the previous rankings
+    # [x] 2.) get the top 10k players in PH ranking
+    # [x] 3.) check the global ranks of each player via Score Rank API
+    # [x] 4.) sort them by ranked score
+    # [ ] 5.) update ranking sheet
+    # [ ] 6.) bing chilling
+
+    ph_players = get_players(osu_api_client)
+    ph_players.sort(key=lambda player: player.curr_ranked_score, reverse=True)
+
+    for player in ph_players:
+        print(player)
