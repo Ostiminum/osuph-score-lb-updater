@@ -7,6 +7,8 @@ RANKING_SPREADSHEET: gspread.Spreadsheet
 
 SCORE_RANK_API_URL = "https://score.respektive.pw/"
 
+PH_PLAYERS = []
+
 class PH_Player():
 
     username: str
@@ -29,8 +31,6 @@ class PH_Player():
         return f"PH_Player({self.username}, {self.user_id}, {self.user_avatar_url}, {self.curr_ranked_score}, #{self.global_score_rank} (#{self.country_score_rank}))"
 
 def get_ph_players(osu_api_client: ossapi.Ossapi):
-    ph_players_list = []
-
     ranking_iterator = None
     current_page_num = 1
 
@@ -50,11 +50,12 @@ def get_ph_players(osu_api_client: ossapi.Ossapi):
         print(f"Visiting Page {current_page_num}...")
 
         for player in ph_ranking.ranking:
-            ph_players_list.append(PH_Player(player))
+            PH_PLAYERS.append(PH_Player(player))
 
         current_page_num += 1
 
-    return ph_players_list
+
+def get_score_ranks():
 
 
 if __name__ == '__main__':
@@ -78,8 +79,8 @@ if __name__ == '__main__':
     # [ ] 4.) update ranking sheet
     # [ ] 5.) bing chilling
 
-    ph_players = get_ph_players(osu_api_client)
-    ph_players.sort(key=lambda player: player.curr_ranked_score, reverse=True)
+    get_ph_players(osu_api_client)
+    PH_PLAYERS.sort(key=lambda player: player.curr_ranked_score, reverse=True)
 
-    for player in ph_players:
+    for player in PH_PLAYERS:
         print(player)
