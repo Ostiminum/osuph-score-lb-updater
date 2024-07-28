@@ -26,9 +26,9 @@ class PH_Player():
         self.curr_ranked_score = user_stats.ranked_score
 
     def __repr__(self):
-        return f"PH_Player({self.username}, {self.user_id}, {self.user_avatar_url}, #{self.global_score_rank} (#{self.country_score_rank}))"
+        return f"PH_Player({self.username}, {self.user_id}, {self.user_avatar_url}, {self.curr_ranked_score}, #{self.global_score_rank} (#{self.country_score_rank}))"
 
-def get_players(osu_api_client: ossapi.Ossapi):
+def get_ph_players(osu_api_client: ossapi.Ossapi):
     ph_players_list = []
 
     ranking_iterator = None
@@ -73,12 +73,12 @@ if __name__ == '__main__':
     # TODO:
     # [ ] 1.) store the previous rankings
     # [x] 2.) get the top 10k players in PH ranking
-    # [x] 3.) check the global ranks of each player via Score Rank API
-    # [x] 4.) sort them by ranked score
-    # [ ] 5.) update ranking sheet
-    # [ ] 6.) bing chilling
+    # [x] 3.) sort them by ranked score
+    # [ ] 4.) get top 10k PH players' global and country score rank
+    # [ ] 4.) update ranking sheet
+    # [ ] 5.) bing chilling
 
-    ph_players = get_players(osu_api_client)
+    ph_players = get_ph_players(osu_api_client)
     ph_players.sort(key=lambda player: player.curr_ranked_score, reverse=True)
 
     for player in ph_players:
