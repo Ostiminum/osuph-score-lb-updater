@@ -34,6 +34,8 @@ def get_ph_players(osu_api_client: ossapi.Ossapi):
     ranking_iterator = None
     current_page_num = 1
 
+    print("Currently browsing PH PERFORMANCE ranking.")
+
     while True:
         ph_ranking = osu_api_client.ranking(
             "osu",
@@ -55,8 +57,36 @@ def get_ph_players(osu_api_client: ossapi.Ossapi):
         current_page_num += 1
 
 
-def get_score_ranks():
+def get_global_score_ranks():
+    ranking_iterator = None
+    current_page_num = 1
+    current_ph_player_index = 1
+    current_rank = 1
 
+    print("Currently browsing SCORES ranking.")
+
+    while True:
+        global_score_ranking = osu_api_client.ranking(
+            "osu",
+            ossapi.RankingType.SCORE,
+            cursor=ranking_iterator
+        )
+
+        ranking_iterator = global_score_ranking.cursor
+
+        if ranking_iterator is None:
+            break
+
+        print(f"Visiting Page {current_page_num}...")
+
+        for player in global_score_ranking.ranking:
+            if (player.user.id == PH_PLAYERS[current_ph_player_index].user_id):
+                PH_PLAYERS[current_ph_player_index].global_score_rank = current_rank
+                current_ph_player_index += 1
+            
+            current_rank += 1
+    
+        current_page_num += 1
 
 if __name__ == '__main__':
     with open('creds.json') as osu_creds_file:
@@ -75,12 +105,14 @@ if __name__ == '__main__':
     # [ ] 1.) store the previous rankings
     # [x] 2.) get the top 10k players in PH ranking
     # [x] 3.) sort them by ranked score
-    # [ ] 4.) get top 10k PH players' global and country score rank
+    # [x] 4.) get top 10k PH players' global and country score rank
     # [ ] 4.) update ranking sheet
     # [ ] 5.) bing chilling
 
     get_ph_players(osu_api_client)
     PH_PLAYERS.sort(key=lambda player: player.curr_ranked_score, reverse=True)
+
+    get_global_score_ranks()
 
     for player in PH_PLAYERS:
         print(player)
