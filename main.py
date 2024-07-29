@@ -6,6 +6,7 @@ RANKING_SPREADSHEET: gspread.Spreadsheet
 CURR_RANKING_SHEET: gspread.Worksheet
 PREV_RANKING_SHEET: gspread.Worksheet
 
+PREV_PH_PLAYERS = []
 PH_PLAYERS = []
 
 class PH_Player():
@@ -97,6 +98,47 @@ def get_global_score_ranks():
     
         current_page_num += 1
 
+def create_sheet_values():
+    values = []
+    
+    for player in PH_PLAYERS:
+        player_avatar_image_str = f"IMAGE(\"{player.user_avatar_url}\")"
+
+        values.append([
+            f"#{player.country_score_rank}",
+            player.country_score_rank_increment,
+            f"(#{player.global_score_rank})" if player.global_score_rank != -1 else "-",
+            f"=HYPERLINK(\"https://osu.ppy.sh/users/{player.user_id}/osu\", {player_avatar_image_str})",
+            player.username,
+            player.ranked_score,
+            player.ranked_score_gain
+        ])
+
+    return values
+
+def get_prev_ranking():
+    starting_column = "B"
+    ending_column = "H"
+
+    starting_row = 2
+    ending_row = f"{len(PH_PLAYERS) + starting_row}"
+
+    prev_ranking = CURR_RANKING_SHEET.get(
+        f"{starting_column}{starting_row}:{ending_column}{ending_row}",
+        value_render_option=gspread.utils.ValueRenderOption.formula
+    )
+
+    # parsing for local stuff
+    for record in prev_ranking:
+        record
+
+
+    PREV_RANKING_SHEET.update(
+        prev_ranking,
+        f"{starting_column}{starting_row}:{ending_column}{ending_row}",
+        raw=False
+    )
+
 
 def update_ranking_sheet():
     starting_column = "B"
@@ -105,24 +147,8 @@ def update_ranking_sheet():
     starting_row = 2
     ending_row = f"{len(PH_PLAYERS) + starting_row}"
 
-    values = []
-    
-    for player in PH_PLAYERS:
-        
-        player_avatar_image_str = f"IMAGE(\"{player.user_avatar_url}\")"
-
-        values.append([
-            f"#{player.country_score_rank}",
-            f"+{player.country_score_rank_increment}" if player.country_score_rank_increment > 0 else player.country_score_rank_increment,
-            f"(#{player.global_score_rank})" if player.global_score_rank != -1 else "-",
-            f"=HYPERLINK(\"https://osu.ppy.sh/users/{player.user_id}/osu\", {player_avatar_image_str})",
-            player.username,
-            f"{player.ranked_score:,}",
-            f"{player.ranked_score_gain:,}"
-        ])
-
     CURR_RANKING_SHEET.update(
-        values,
+        create_sheet_values(),
         f"{starting_column}{starting_row}:{ending_column}{ending_row}",
         raw=False
     )
@@ -148,8 +174,10 @@ if __name__ == '__main__':
     # [x] 2.) get the top 10k players in PH ranking
     # [x] 3.) sort them by ranked score
     # [x] 4.) get top 10k PH players' global and country score rank
-    # [ ] 4.) update ranking sheet
+    # [x] 4.) update ranking sheet
     # [ ] 5.) bing chilling
+
+    get_prev_ranking()
 
     get_ph_players(osu_api_client)
     PH_PLAYERS.sort(key=lambda player: player.ranked_score, reverse=True)
@@ -160,6 +188,3 @@ if __name__ == '__main__':
     get_global_score_ranks()
 
     update_ranking_sheet()
-
-    # for player in PH_PLAYERS:
-    #     print(player)
