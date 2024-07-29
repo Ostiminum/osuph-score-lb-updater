@@ -208,8 +208,8 @@ def calc_delta_stats():
                 curr_player.prev_global_score_rank = PREV_PH_PLAYERS[curr_index].global_score_rank
                 curr_player.prev_ranked_score = PREV_PH_PLAYERS[curr_index].ranked_score
 
-                curr_player.country_score_rank_delta = curr_player.country_score_rank - curr_player.prev_country_score_rank
-                curr_player.global_score_rank_delta = curr_player.global_score_rank - curr_player.prev_global_score_rank
+                curr_player.country_score_rank_delta = curr_player.prev_country_score_rank - curr_player.country_score_rank
+                curr_player.global_score_rank_delta = curr_player.prev_global_score_rank - curr_player.global_score_rank
                 curr_player.ranked_score_gain = curr_player.ranked_score - curr_player.prev_ranked_score
                 
                 break
